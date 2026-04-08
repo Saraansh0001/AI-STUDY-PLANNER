@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Trajectory {
+  id          Int      @id @default(autoincrement())
+  sessionId   String
+  step        Int
+  observation Json
+  action      Json?
+  reward      Float?
+  done        Boolean  @default(false)
+  info        Json?
+  createdAt   DateTime @default(now())
+}
+
+model PDFMetadata {
+  id        Int      @id @default(autoincrement())
+  name      String
+  path      String
+  content   String
+  createdAt DateTime @default(now())
+}

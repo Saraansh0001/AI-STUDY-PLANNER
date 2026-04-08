@@ -1,0 +1,25 @@
+name: ai-study-buddy
+version: 1.0.0
+description: A simulated student study session environment following OpenEnv spec.
+author: DeepMind Assistant
+tasks:
+  - id: summarize
+    difficulty: Easy
+    description: Summarize a paragraph.
+  - id: quiz_gen
+    difficulty: Medium
+    description: Generate a 3-question quiz from a snippet.
+  - id: answer_query
+    difficulty: Hard
+    description: Answer a complex student query using a provided PDF context.
+endpoints:
+  step: POST /step
+  reset: POST /reset
+  state: GET /state
+schema:
+  action:
+    task: string
+    response: any
+  observation:
+    text_chunk: string
+    student_query: string?
