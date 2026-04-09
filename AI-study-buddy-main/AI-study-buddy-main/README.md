@@ -1,106 +1,279 @@
-# 🧠 AI Study Buddy
+# AI Study Buddy (Phase 1)
 
-**AI Study Buddy** is a premium, futuristic web application designed to revolutionize the way students learn. By leveraging AI, it transforms static notes into interactive learning experiences, including summaries, quizzes, and a dedicated chat assistant.
+<p align="center">
+  <b>Upload a PDF, extract text in-browser, and study through summary, quiz, and Q&A.</b>
+</p>
 
-![AI Study Buddy Screenshot](https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=1000)
-
----
-
-## ✨ Features
-
-- **🚀 Instant Note Processing:** Upload your PDFs and watch the AI analyze your content in seconds.
-- **📝 Smart Summarization:** Get the gist of long documents with concise, well-structured summaries.
-- **❓ Interactive Quizzes:** Test your knowledge with auto-generated multiple-choice questions.
-- **💬 AI Tutor Chat:** Ask questions about your materials. Supports both English and Hinglish!
-- **🎨 Premium UI/UX:** A stunning glassmorphism-inspired interface with dark mode and smooth animations.
-- **📱 Responsive Design:** Study anytime, anywhere, on any device.
+<p align="center">
+  <img alt="React" src="https://img.shields.io/badge/React-18.2.0-20232A?logo=react" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-5.2.0-646CFF?logo=vite" />
+  <img alt="PDF.js" src="https://img.shields.io/badge/pdfjs--dist-5.6.205-ff6f00" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%201%20Complete-0ea5e9" />
+</p>
 
 ---
 
-## 🛠️ Technology Stack
+## 1. Project Title
 
-- **Core:** HTML5, Vanilla CSS3, JavaScript (ES6+ Mobile-first)
-- **Styling:** Custom CSS with Glassmorphism and CSS Variables
-- **Icons:** [Phosphor Icons](https://phosphoricons.com/)
-- **Typography:** [Inter Font Family](https://fonts.google.com/specimen/Inter)
-- **Dev Server:** [http-server](https://www.npmjs.com/package/http-server)
+AI Study Buddy
 
 ---
 
-## 🚀 Getting Started
+## 2. Project Description
 
-### Prerequisites
+AI Study Buddy is a React + Vite web application that helps users study from their own PDF notes.
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
+In the current implementation, users can:
 
-### Installation & Setup
+- Upload a PDF file.
+- Extract readable text directly in the browser using PDF.js.
+- Generate a structured summary from extracted text.
+- Generate quiz questions from document keywords.
+- Ask questions in a chat UI and receive answers grounded in uploaded PDF content.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Ashir010/AI-study-buddy.git
-   cd AI-study-buddy
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in your browser:**
-   The application will be running at `http://localhost:8123`.
+The app is frontend-first and runs without a backend service in Phase 1.
 
 ---
 
-## 📂 Project Structure
+## 3. Phase 1 Scope (Completed)
+
+Phase 1 delivered a working single-page study workflow from upload to learning outputs.
+
+Completed scope:
+
+- Frontend application architecture with React components.
+- Custom hash-based navigation system with browser history support.
+- Login and signup UI flow (client-side state only).
+- PDF upload via drag-and-drop and file picker.
+- PDF parsing and text extraction using `pdfjs-dist` worker.
+- Local summary generation (overview, key concepts, detailed breakdown).
+- Local quiz generation (MCQ-style from extracted terms/context).
+- PDF-grounded chat answer generation with Hinglish toggle.
+- Theme toggle (dark/light) with persistence in `localStorage`.
+- Responsive glassmorphism-based interface and animated visual elements.
+
+---
+
+## 4. Features Implemented (Current)
+
+### Authentication UI
+
+- Login screen.
+- Signup screen.
+- Navigation to app after submit.
+- Logout action that clears in-memory session state.
+
+### Document Ingestion
+
+- PDF-only validation by MIME type/extension.
+- Upload area supports drag/drop and click-to-browse.
+- Loading state while PDF text is processed.
+
+### Summary Engine (Local Heuristic)
+
+- Extracts sentence-based overview.
+- Identifies top repeated keywords as key concepts.
+- Builds a concise detailed breakdown from top sentences.
+
+### Quiz Engine (Local Heuristic)
+
+- Generates up to 5 MCQ questions from extracted text.
+- Uses keyword frequency + sentence matching.
+- Supports question navigation, answer feedback, score, and retake.
+
+### Chat Engine (Local Heuristic)
+
+- Restricts answers to uploaded PDF text.
+- Finds best-matching sentences for user questions.
+- Supports Hinglish output toggle.
+- Includes typing indicator simulation.
+
+### UI/UX
+
+- Sticky glass header and dynamic nav actions.
+- Animated background orbs and fade transitions.
+- Dark/light theme switch.
+- Mobile-responsive layouts for major views.
+
+---
+
+## 5. Tech Stack
+
+### Core
+
+- JavaScript (ES Modules)
+- React 18
+- React DOM 18
+
+### Build & Tooling
+
+- Vite 5
+- `@vitejs/plugin-react`
+- npm + Node.js
+
+### PDF Processing
+
+- `pdfjs-dist` (legacy build with worker)
+
+### UI & Assets
+
+- Custom CSS (single stylesheet)
+- Google Fonts (`Inter`)
+- Phosphor Icons (CDN)
+
+---
+
+## 6. Folder Structure Explanation
 
 ```text
-AI-Study-Buddy/
-├── index.html        # Main entry point
-├── index.css         # Global styles & design system
-├── app.js            # Main application logic & routing
-├── views/            # UI Components for different pages
-│   ├── home.js       # Upload / Home view
-│   ├── dashboard.js  # Main dashboard
-│   ├── chat.js       # AI Chat interface
-│   ├── summary.js    # Note summary view
-│   ├── quiz.js       # Interactive quiz view
-│   └── login.js      # Authentication view
-└── package.json      # Project configuration
+AI-study-buddy-main/
+|-- app.jsx                    # Main app entry: routes, auth state, upload flow, theme logic
+|-- index.html                 # HTML shell, header/nav placeholders, script mount point
+|-- index.css                  # Global design system + all component styles
+|-- package.json               # Scripts and dependencies
+|-- package-lock.json          # Locked dependency tree
+|-- vite.config.js             # Vite configuration with React plugin
+|-- README.md                  # Project documentation
+|
+|-- views/
+|   |-- home.jsx               # Upload page with drag/drop + file picker
+|   |-- dashboard.jsx          # Central action cards (Summary, Quiz, Chat)
+|   |-- summary.jsx            # Renders summary from uploaded document object
+|   |-- quiz.jsx               # Quiz generation UI, scoring, navigation
+|   |-- chat.jsx               # Q&A interface with PDF-grounded responses
+|   |-- login.jsx              # Login form UI
+|   |-- signup.jsx             # Signup form UI
+|
+|-- utils/
+|   |-- pdfSummary.js          # PDF text extraction + local summary utilities
+|
+|-- dist/                      # Production build output (generated by Vite)
+|   |-- index.html
+|   |-- assets/
+|       |-- index-*.js
+|       |-- index-*.css
+|       |-- pdf*.js / pdf.worker*.js / .mjs
+|
+|-- node_modules/              # Installed dependencies (generated)
 ```
 
 ---
 
-## 🌈 Design Philosophy
+## 7. How It Works (High-Level)
 
-The project follows a **"Futuristic Glass"** aesthetic:
-- **Glassmorphism:** Semi-transparent cards with backdrop filters.
-- **Dynamic Backgrounds:** Animated background orbs for a lively feel.
-- **Micro-interactions:** Smooth transitions and hover effects on all interactive elements.
-- **Accessibility:** High contrast ratios even in dark mode.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open an issue or submit a pull request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git checkout origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. App bootstraps in `index.html` and mounts React from `app.jsx`.
+2. A custom route helper (`window.navigate`) switches views using URL hash/history state.
+3. User logs in/signs up (client state toggles authenticated session).
+4. User uploads a PDF in Home view.
+5. `extractTextFromPdf` reads each page and combines text content.
+6. `generateSummaryFromText` creates overview, concepts, and breakdown.
+7. Uploaded doc object is stored in app state and used by Summary, Quiz, and Chat views.
+8. Quiz and chat generate outputs from extracted text using in-app heuristics.
+9. Theme preference is persisted in `localStorage` and reloaded on startup.
 
 ---
 
-## 📄 License
+## 8. Setup & Installation Instructions
 
-This project is licensed under the MIT License - see the `LICENSE` file for details.
+### Prerequisites
+
+- Node.js 18+ recommended
+- npm
+
+### Installation
+
+```bash
+npm install
+```
+
+### Start Development Server
+
+```bash
+npm run dev
+```
+
+### Production Build
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
 
 ---
 
-Built with ❤️ for better learning.
+## 9. Usage Instructions
+
+1. Run `npm run dev`.
+2. Open the local Vite URL shown in terminal (commonly `http://localhost:5173`).
+3. Login or sign up in the UI.
+4. Upload a text-based PDF from the Home page.
+5. Go to Dashboard and choose:
+   - Explain Notes
+   - Generate Quiz
+   - Ask Questions
+6. Toggle theme (moon/sun icon) as needed.
+7. Use Logout in header to clear current in-memory session.
+
+---
+
+## 10. Screenshots
+
+Screenshots are not included in the repository at the moment.
+
+Placeholders:
+
+- `docs/screenshots/login.png` - Login screen
+- `docs/screenshots/upload.png` - PDF upload screen
+- `docs/screenshots/dashboard.png` - Dashboard action cards
+- `docs/screenshots/summary.png` - Summary view
+- `docs/screenshots/quiz.png` - Quiz view
+- `docs/screenshots/chat.png` - Chat view
+
+---
+
+## 11. Known Issues / Limitations (Observed in Code)
+
+- No backend or database; all state is runtime/in-memory.
+- Authentication is UI-based only (no secure auth, no persistent user accounts).
+- Chat, summary, and quiz are heuristic algorithms, not external AI model calls.
+- Extracted text quality depends on PDF content; scanned/image-only PDFs may fail.
+- Header nav is injected via `innerHTML` in app state effects (works, but not ideal React pattern).
+- Some generated/legacy references in previous docs (for example `app.js`) do not match current code (`app.jsx`).
+
+---
+
+## 12. Future Scope (Post-Phase 1)
+
+Clearly separated from current implementation:
+
+- Backend integration for real authentication and persistence.
+- User accounts, document storage, and session history.
+- LLM-backed summarization, quiz generation, and chat.
+- OCR pipeline for scanned PDFs.
+- Test suite (unit/integration/e2e) and CI checks.
+
+---
+
+## 13. Contributors
+
+Contributor metadata is not explicitly defined in `package.json` or repository manifests in this folder.
+
+If you want, add a section like:
+
+- Name - Role
+- Name - Role
+
+---
+
+## Scripts Reference
+
+From current `package.json`:
+
+- `npm run dev` - start Vite dev server
+- `npm run build` - create production bundle in `dist/`
+- `npm run preview` - preview production build locally
