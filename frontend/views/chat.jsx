@@ -1,71 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have',
-  'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'their', 'this',
-  'to', 'was', 'were', 'will', 'with', 'you', 'your', 'we', 'they', 'them', 'can',
-  'into', 'about', 'than', 'then', 'there', 'these', 'those', 'such', 'not', 'but',
-  'what', 'which', 'when', 'where', 'who', 'why', 'how', 'explain', 'tell'
-]);
-
-const normalize = (text) =>
-  (text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const tokenize = (text) =>
-  normalize(text)
-    .split(' ')
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
-
-const splitSentences = (text) =>
-  (text || '')
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 25);
-
-const buildAnswerFromPdf = (question, pdfText, isHinglish) => {
-  const questionTokens = tokenize(question);
-  const sentences = splitSentences(pdfText).slice(0, 500);
-
-  if (!sentences.length) {
-    return isHinglish
-      ? 'PDF mein readable text nahi mila. Please text-based PDF upload karo.'
-      : 'No readable text was found in this PDF. Please upload a text-based PDF.';
-  }
-
-  if (!questionTokens.length) {
-    return isHinglish
-      ? 'Thoda specific question pucho, main uploaded PDF se answer dunga.'
-      : 'Please ask a more specific question, and I will answer from your uploaded PDF.';
-  }
-
-  const scored = sentences
-    .map((sentence) => {
-      const sentenceTokens = new Set(tokenize(sentence));
-      let score = 0;
-      for (const token of questionTokens) {
-        if (sentenceTokens.has(token)) score += 1;
-      }
-      return { sentence, score };
-    })
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  if (!scored.length) {
-    return isHinglish
-      ? 'Mujhe uploaded PDF mein is question ka direct match nahi mila. Thoda different wording mein pucho.'
-      : "I couldn't find a direct match for that in the uploaded PDF. Try rephrasing your question.";
-  }
-
-  const best = scored.slice(0, 3).map((s) => s.sentence);
-  if (isHinglish) {
-    return `Uploaded PDF ke basis par:\n${best.join(' ')}`;
-  }
-  return `Based on your uploaded PDF:\n${best.join(' ')}`;
-};
+import { generateText } from '../utils/gemini.js';
 
 export function ChatView({ uploadedDoc }) {
   const hasPdf = Boolean(uploadedDoc?.extractedText);
@@ -83,24 +18,42 @@ export function ChatView({ uploadedDoc }) {
 
   const pdfText = useMemo(() => uploadedDoc?.extractedText || '', [uploadedDoc]);
 
-  const send = () => {
-    if (!input.trim()) return;
+  const send = async () => {
+    if (!input.trim() || isThinking) return;
 
     const question = input.trim();
     setMessages((prev) => [...prev, { type: 'user', text: question }]);
     setInput('');
     setIsThinking(true);
 
-    setTimeout(() => {
-      const answer = hasPdf
-        ? buildAnswerFromPdf(question, pdfText, isHinglish)
-        : isHinglish
-          ? 'Pehle PDF upload karo, fir main usi se answer dunga.'
-          : 'Please upload a PDF first. Then I will answer only from that file.';
+    if (!hasPdf) {
+      setTimeout(() => {
+        setIsThinking(false);
+        setMessages((prev) => [...prev, { type: 'ai fade-in', text: isHinglish ? 'Pehle PDF upload karo, fir main usi se answer dunga.' : 'Please upload a PDF first. Then I will answer only from that file.' }]);
+      }, 700);
+      return;
+    }
 
+    try {
+      const systemInstruction = `You are a helpful AI study assistant. 
+You will be provided with the text of a document below. 
+You MUST answer the user's questions STRICTLY based on the provided document text. 
+Do not invent anything outside the document.
+${isHinglish ? 'IMPORTANT: You must explain the answer in Hinglish (a mix of Hindi and English written in Latin script), keeping it easy to understand for an Indian student.' : ''}
+
+Document Text:
+"""
+${pdfText.slice(0, 40000)}
+"""`;
+      
+      const answer = await generateText(question, systemInstruction);
       setIsThinking(false);
       setMessages((prev) => [...prev, { type: 'ai fade-in', text: answer }]);
-    }, 700);
+    } catch (error) {
+      console.error(error);
+      setIsThinking(false);
+      setMessages((prev) => [...prev, { type: 'ai fade-in', text: 'Error connecting to the AI. Ensure your API key is correctly configured.' }]);
+    }
   };
 
   return (

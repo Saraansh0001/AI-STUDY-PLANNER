@@ -1,36 +1,6 @@
-const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have',
-  'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'their', 'this',
-  'to', 'was', 'were', 'will', 'with', 'you', 'your', 'we', 'they', 'them', 'can',
-  'into', 'about', 'than', 'then', 'there', 'these', 'those', 'such', 'not', 'but'
-]);
+import { generateJSON } from './gemini.js';
 
 const cleanText = (text) => text.replace(/\s+/g, ' ').trim();
-
-const splitSentences = (text) => {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 30);
-};
-
-const getTopKeywords = (text, limit = 6) => {
-  const words = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-
-  const counts = new Map();
-  for (const word of words) {
-    counts.set(word, (counts.get(word) || 0) + 1);
-  }
-
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([word]) => word);
-};
 
 export const extractTextFromPdf = async (file) => {
   const [{ getDocument, GlobalWorkerOptions }, workerUrlModule] = await Promise.all([
@@ -57,7 +27,7 @@ export const extractTextFromPdf = async (file) => {
   return cleanText(text);
 };
 
-export const generateSummaryFromText = (rawText) => {
+export const generateSummaryFromTextAsync = async (rawText) => {
   const text = cleanText(rawText || '');
   if (!text) {
     return {
@@ -67,23 +37,41 @@ export const generateSummaryFromText = (rawText) => {
     };
   }
 
-  const sentences = splitSentences(text);
-  const keywords = getTopKeywords(text);
+  const prompt = `Analyze the following document text and provide a structured summary payload.
+Text:
+"""
+${text.slice(0, 30000)}
+"""`;
 
-  const overview = (sentences[0] || text.slice(0, 240)).slice(0, 260);
-  const detailedBreakdown = sentences.slice(1, 4).join(' ') || sentences[0] || text.slice(0, 500);
-
-  const keyConcepts = keywords.map((word) => {
-    const sentenceWithWord = sentences.find((s) => s.toLowerCase().includes(word));
-    return {
-      title: word.charAt(0).toUpperCase() + word.slice(1),
-      description: sentenceWithWord || `This topic appears repeatedly in your uploaded PDF.`
-    };
-  });
-
-  return {
-    overview,
-    keyConcepts,
-    detailedBreakdown
+  const schema = {
+    type: "OBJECT",
+    properties: {
+      overview: { type: "STRING", description: "A high-level 2-3 sentence overview of the entire document." },
+      keyConcepts: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            title: { type: "STRING", description: "Name of the key concept" },
+            description: { type: "STRING", description: "Brief explanation of the concept" }
+          },
+          required: ["title", "description"]
+        }
+      },
+      detailedBreakdown: { type: "STRING", description: "A more thorough paragraph breaking down the main arguments or facts presented in the text." }
+    },
+    required: ["overview", "keyConcepts", "detailedBreakdown"]
   };
+
+  try {
+    const summary = await generateJSON(prompt, "You are a professional research summaries assistant.", schema);
+    return summary;
+  } catch (error) {
+    console.error("Failed to generate summary from text:", error);
+    return {
+      overview: 'An error occurred while generating the summary via AI.',
+      keyConcepts: [],
+      detailedBreakdown: 'Please check your API key configuration and try again.'
+    };
+  }
 };

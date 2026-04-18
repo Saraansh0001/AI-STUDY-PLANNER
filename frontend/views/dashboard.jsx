@@ -34,6 +34,18 @@ export function DashboardView() {
           <h2>Socratic Opponent</h2>
           <p>Defend your logic against a rigorous AI debater.</p>
         </div>
+
+        <div className="glass-card action-card" onClick={() => window.navigate('formatter')}>
+          <i className="ph-fill ph-file-text"></i>
+          <h2>Exam Formatter</h2>
+          <p>Format a raw concept strictly into a standardized exam structure.</p>
+        </div>
+
+        <div className="glass-card action-card" onClick={() => window.navigate('tagger')}>
+          <i className="ph-fill ph-tag"></i>
+          <h2>Topic Tagger</h2>
+          <p>Extract and classify structural metadata into raw JSON.</p>
+        </div>
       </div>
     </div>
   );

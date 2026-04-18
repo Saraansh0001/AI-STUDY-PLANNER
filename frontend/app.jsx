@@ -10,9 +10,11 @@ import { LoginView } from './views/login.jsx';
 import { SignupView } from './views/signup.jsx';
 import { ReExplainView } from './views/reexplain.jsx';
 import { SocraticView } from './views/socratic.jsx';
-import { extractTextFromPdf, generateSummaryFromText } from './utils/pdfSummary.js';
+import { FormatterView } from './views/formatter.jsx';
+import { TaggerView } from './views/tagger.jsx';
+import { extractTextFromPdf, generateSummaryFromTextAsync } from './utils/pdfSummary.js';
 
-const VALID_ROUTES = ['home', 'dashboard', 'chat', 'summary', 'quiz', 'reexplain', 'socratic', 'signup', 'login'];
+const VALID_ROUTES = ['home', 'dashboard', 'chat', 'summary', 'quiz', 'reexplain', 'socratic', 'formatter', 'tagger', 'signup', 'login'];
 
 const getRouteFromUrl = () => {
   const hashRoute = window.location.hash.replace('#', '');
@@ -115,7 +117,7 @@ function App() {
 
     try {
       const extractedText = await extractTextFromPdf(file);
-      const summary = generateSummaryFromText(extractedText);
+      const summary = await generateSummaryFromTextAsync(extractedText);
       setUploadedDoc({
         fileName: file.name,
         extractedText,
@@ -176,6 +178,8 @@ function App() {
       case 'quiz': return <QuizView uploadedDoc={uploadedDoc} />;
       case 'reexplain': return <ReExplainView />;
       case 'socratic': return <SocraticView />;
+      case 'formatter': return <FormatterView />;
+      case 'tagger': return <TaggerView />;
       case 'signup': return <SignupView onSignup={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToLogin={() => window.navigate('login')} />;
       case 'login': return <LoginView onLogin={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToSignup={() => window.navigate('signup')} />;
       default: return <LoginView onLogin={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToSignup={() => window.navigate('signup')} />;

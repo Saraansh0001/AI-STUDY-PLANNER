@@ -1,76 +1,60 @@
-import React, { useMemo, useState } from 'react';
-
-const STOP_WORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have',
-  'he', 'in', 'is', 'it', 'its', 'of', 'on', 'or', 'that', 'the', 'their', 'this',
-  'to', 'was', 'were', 'will', 'with', 'you', 'your', 'we', 'they', 'them', 'can',
-  'into', 'about', 'than', 'then', 'there', 'these', 'those', 'such', 'not', 'but'
-]);
-
-const cleanText = (text) => (text || '').replace(/\s+/g, ' ').trim();
-
-const splitSentences = (text) => {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 30);
-};
-
-const getTopKeywords = (text, limit = 14) => {
-  const words = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-
-  const counts = new Map();
-  for (const word of words) {
-    counts.set(word, (counts.get(word) || 0) + 1);
-  }
-
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-    .map(([word]) => word);
-};
-
-const generateQuizFromText = (rawText, totalQuestions = 5) => {
-  const text = cleanText(rawText);
-  if (!text) return [];
-
-  const sentences = splitSentences(text).filter((s) => s.length >= 45 && s.length <= 220);
-  const keywords = getTopKeywords(text, 14);
-  if (keywords.length < 3 || sentences.length === 0) return [];
-
-  const questions = [];
-
-  for (const keyword of keywords) {
-    if (questions.length >= totalQuestions) break;
-
-    const sentence = sentences.find((s) => s.toLowerCase().includes(keyword));
-    if (!sentence) continue;
-
-    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-    const maskedSentence = sentence.replace(regex, '_____');
-
-    questions.push({
-      question: `Please identify the missing term based on your notes:\n\n"${maskedSentence}"`,
-      answer: keyword,
-      originalSentence: sentence
-    });
-  }
-
-  return questions.slice(0, totalQuestions);
-};
+import React, { useState, useEffect } from 'react';
+import { generateJSON } from '../utils/gemini.js';
 
 export function QuizView({ uploadedDoc }) {
-  const questions = useMemo(() => generateQuizFromText(uploadedDoc?.extractedText, 5), [uploadedDoc]);
+  const [questions, setQuestions] = useState([]);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  const [loadError, setLoadError] = useState('');
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
   const [currentInput, setCurrentInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [showResult, setShowResult] = useState(false);
+
+  useEffect(() => {
+    if (!uploadedDoc?.extractedText) return;
+
+    const fetchQuiz = async () => {
+      setIsLoadingQuiz(true);
+      setLoadError('');
+
+      const prompt = `Based on the following document text, generate exactly 5 fill-in-the-blank style questions.
+Each question should present a sentence or concept from the text with a key term replaced by "_____".
+Please prefix the question with a short instructional prompt like "Identify the missing term:"
+
+Document Text:
+"""
+${uploadedDoc.extractedText.slice(0, 30000)}
+"""`;
+
+      const schema = {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            question: { type: "STRING", description: "The fill in the blank question." },
+            answer: { type: "STRING", description: "The exact missing key term." },
+            originalSentence: { type: "STRING", description: "The original sentence for context." }
+          },
+          required: ["question", "answer", "originalSentence"]
+        }
+      };
+
+      try {
+        const generatedQs = await generateJSON(prompt, "You are an expert exam generator.", schema);
+        setQuestions(generatedQs.slice(0, 5));
+      } catch (err) {
+        console.error("Quiz Gen Error:", err);
+        setLoadError('Failed to generate quiz from your PDF using AI. Please check your API key.');
+      } finally {
+        setIsLoadingQuiz(false);
+      }
+    };
+
+    fetchQuiz();
+  }, [uploadedDoc]);
 
   if (!uploadedDoc) {
     return (
@@ -85,6 +69,33 @@ export function QuizView({ uploadedDoc }) {
               <i className="ph ph-upload-simple"></i> Upload PDF
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoadingQuiz) {
+    return (
+      <div className="quiz-container fade-in">
+        <div className="quiz-header">
+          <h1>Metacognitive Practice</h1>
+        </div>
+        <div className="glass-card quiz-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 2rem' }}>
+          <div className="spinner" style={{ marginBottom: '2rem' }}></div>
+          <p>AI is analyzing your notes to generate metacognitive questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="quiz-container fade-in">
+        <div className="quiz-header">
+          <h1>Metacognitive Practice</h1>
+        </div>
+        <div className="glass-card quiz-card">
+          <p style={{ color: '#fca5a5' }}>{loadError}</p>
         </div>
       </div>
     );
@@ -131,25 +142,41 @@ export function QuizView({ uploadedDoc }) {
     setShowResult(true);
   };
 
-  const handleSubmit = () => {
-    if (!currentInput.trim() || hasFeedback) return;
+  const handleSubmit = async () => {
+    if (!currentInput.trim() || hasFeedback || isThinking) return;
 
     setIsThinking(true);
-    const answer = currentInput.trim().toLowerCase();
-    const isRight = answer === currentQuestion.answer.toLowerCase() || currentQuestion.answer.toLowerCase().includes(answer);
+    const answer = currentInput.trim();
 
-    setTimeout(() => {
+    const prompt = `Question Context: "${currentQuestion.originalSentence}"
+Missing Term (Correct Answer): "${currentQuestion.answer}"
+Student's Answer: "${answer}"
+
+Evaluate the student's answer. 
+Rule 1: NEVER reveal the exact correct answer.
+Rule 2: NEVER say "Great job!" or "Correct!". Focus purely on objective validation.
+Rule 3: NEVER give encouraging filler.
+Rule 4: ONLY output whether they were right, what their misconception was (if any), and one precise sentence about why the correct answer is correct based on the text. No padding. No praise.`;
+
+    const schema = {
+      type: "OBJECT",
+      properties: {
+        isRight: { type: "BOOLEAN", description: "True if the student's answer conceptually matches the missing term." },
+        feedbackText: { type: "STRING", description: "The strict, unpadded metacognitive response following all rules." }
+      },
+      required: ["isRight", "feedbackText"]
+    };
+
+    try {
+      const feedback = await generateJSON(prompt, "You are a rigid metacognitive quiz engine.", schema);
       setIsThinking(false);
-      let feedbackText = '';
-      if (isRight) {
-        feedbackText = `You were right. The correct answer '${currentQuestion.answer}' is accurate because it directly completes the logical parameters defined by the sentence.`;
-      } else {
-        feedbackText = `You were incorrect. Your misconception was assuming '${currentInput}' logically completes this specific context. The correct answer is '${currentQuestion.answer}', because it identifies the core concept explicitly outlined in the source text.`;
-      }
-
       setUserAnswers((prev) => ({ ...prev, [currentIndex]: currentInput }));
-      setFeedbacks((prev) => ({ ...prev, [currentIndex]: { right: isRight, text: feedbackText } }));
-    }, 800);
+      setFeedbacks((prev) => ({ ...prev, [currentIndex]: { right: feedback.isRight, text: feedback.feedbackText } }));
+    } catch (error) {
+      console.error(error);
+      setIsThinking(false);
+      alert('Error connecting to the AI for evaluation.');
+    }
   };
 
   const score = questions.reduce((sum, q, idx) => {
@@ -194,7 +221,7 @@ export function QuizView({ uploadedDoc }) {
       </div>
 
       <div className="glass-card quiz-card">
-        <h2 className="question-text" style={{ whiteSpace: 'pre-wrap' }}>{currentQuestion.question}</h2>
+        <h2 className="question-text" style={{ whiteSpace: 'pre-wrap' }}>{currentQuestion?.question}</h2>
 
         <div className="quiz-input-area" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
           <input
@@ -224,7 +251,7 @@ export function QuizView({ uploadedDoc }) {
               disabled={!currentInput.trim() || isThinking} 
               style={{ alignSelf: 'flex-start' }}
             >
-              {isThinking ? 'Evaluating...' : 'Submit Answer'}
+              {isThinking ? 'Evaluating with AI...' : 'Submit Answer'}
             </button>
           )}
         </div>
