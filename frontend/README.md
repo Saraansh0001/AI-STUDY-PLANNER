@@ -1,126 +1,123 @@
-# AI Study Buddy Frontend (Phase 1)
+# AI Study Buddy (Phase 1)
 
 <p align="center">
-   <b>Frontend study interface for PDF upload, summary, quiz generation, and PDF-grounded Q&A.</b>
+  <b>Upload a PDF, extract text in-browser, and study through summary, quiz, and Q&A.</b>
 </p>
 
 <p align="center">
-   <img alt="React" src="https://img.shields.io/badge/React-18.2.0-20232A?logo=react" />
-   <img alt="Vite" src="https://img.shields.io/badge/Vite-5.2.0-646CFF?logo=vite" />
-   <img alt="PDF.js" src="https://img.shields.io/badge/pdfjs--dist-5.6.205-ff6f00" />
-   <img alt="Status" src="https://img.shields.io/badge/Status-Phase%201%20Complete-0ea5e9" />
+  <img alt="React" src="https://img.shields.io/badge/React-18.2.0-20232A?logo=react" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-5.2.0-646CFF?logo=vite" />
+  <img alt="PDF.js" src="https://img.shields.io/badge/pdfjs--dist-5.6.205-ff6f00" />
+  <img alt="Status" src="https://img.shields.io/badge/Status-Phase%201%20Complete-0ea5e9" />
 </p>
 
 ---
 
 ## 1. Project Title
 
-AI Study Buddy Frontend
+AI Study Buddy
 
 ---
 
 ## 2. Project Description
 
-This is a React + Vite single-page frontend that lets users study from uploaded PDF notes.
+AI Study Buddy is a React + Vite web application that helps users study from their own PDF notes.
 
-The app currently supports:
+In the current implementation, users can:
 
-- PDF upload and text extraction in-browser.
-- Auto-generated summary from uploaded content.
-- Auto-generated MCQ quiz from uploaded content.
-- Chat-based question answering constrained to uploaded PDF text.
-- Login/signup UI flow and dashboard navigation.
-- Light/dark theme switching with persisted preference.
+- Upload a PDF file.
+- Extract readable text directly in the browser using PDF.js.
+- Generate a structured summary from extracted text.
+- Generate quiz questions from document keywords.
+- Ask questions in a chat UI and receive answers grounded in uploaded PDF content.
 
-Phase 1 is frontend-first and works without a backend dependency for core study flows.
+The app is frontend-first and runs without a backend service in Phase 1.
 
 ---
 
 ## 3. Phase 1 Scope (Completed)
 
-Implemented scope in current codebase:
+Phase 1 delivered a working single-page study workflow from upload to learning outputs.
 
-- React application shell with route switching.
-- Hash/history based custom client-side navigation.
-- Login and signup screens with local authenticated UI state.
-- Upload interface with drag-and-drop + file picker.
-- PDF parsing using `pdfjs-dist` worker setup.
-- Local summary generation utilities.
-- Local quiz generation and scoring UI.
-- Local PDF-grounded chat with Hinglish toggle.
-- Responsive, animated glassmorphism UI system.
-- Theme toggle and `localStorage` persistence.
+Completed scope:
+
+- Frontend application architecture with React components.
+- Custom hash-based navigation system with browser history support.
+- Login and signup UI flow (client-side state only).
+- PDF upload via drag-and-drop and file picker.
+- PDF parsing and text extraction using `pdfjs-dist` worker.
+- Local summary generation (overview, key concepts, detailed breakdown).
+- Local quiz generation (MCQ-style from extracted terms/context).
+- PDF-grounded chat answer generation with Hinglish toggle.
+- Theme toggle (dark/light) with persistence in `localStorage`.
+- Responsive glassmorphism-based interface and animated visual elements.
 
 ---
 
 ## 4. Features Implemented (Current)
 
-### Authentication and Navigation
+### Authentication UI
 
-- Login and signup forms.
-- In-memory auth toggle on submit.
-- Header actions injected for authenticated state.
-- Logout flow clearing app session state.
+- Login screen.
+- Signup screen.
+- Navigation to app after submit.
+- Logout action that clears in-memory session state.
 
-### PDF Upload and Processing
+### Document Ingestion
 
-- Accepts `.pdf` via drag-drop or click upload.
-- Validates file type before processing.
-- Displays loading state during extraction.
-- Extracts text from all PDF pages with PDF.js.
+- PDF-only validation by MIME type/extension.
+- Upload area supports drag/drop and click-to-browse.
+- Loading state while PDF text is processed.
 
-### Notes Summary
+### Summary Engine (Local Heuristic)
 
-- Produces:
-  - overview,
-  - key concepts list,
-  - detailed breakdown.
-- Includes empty-state fallback when no PDF is loaded.
+- Extracts sentence-based overview.
+- Identifies top repeated keywords as key concepts.
+- Builds a concise detailed breakdown from top sentences.
 
-### Quiz Generator
+### Quiz Engine (Local Heuristic)
 
-- Generates up to 5 questions from text keywords/sentences.
-- Multiple-choice options with selected/correct/wrong states.
-- Previous/next navigation and final score screen.
-- Retake and answer review behavior.
+- Generates up to 5 MCQ questions from extracted text.
+- Uses keyword frequency + sentence matching.
+- Supports question navigation, answer feedback, score, and retake.
 
-### Chat Assistant (Local Heuristic)
+### Chat Engine (Local Heuristic)
 
-- Answers questions by matching query tokens to PDF sentences.
-- Restricts answers to uploaded document content.
-- Hinglish mode toggle for responses.
-- Thinking indicator animation.
+- Restricts answers to uploaded PDF text.
+- Finds best-matching sentences for user questions.
+- Supports Hinglish output toggle.
+- Includes typing indicator simulation.
 
-### UI/UX Layer
+### UI/UX
 
-- Sticky glass header.
-- Animated background orbs.
-- Transition effects and reusable card/button system.
-- Mobile-responsive layouts for all primary views.
+- Sticky glass header and dynamic nav actions.
+- Animated background orbs and fade transitions.
+- Dark/light theme switch.
+- Mobile-responsive layouts for major views.
 
 ---
 
 ## 5. Tech Stack
 
-### Framework and Runtime
+### Core
 
+- JavaScript (ES Modules)
 - React 18
 - React DOM 18
-- JavaScript (ES Modules)
 
-### Build and Tooling
+### Build & Tooling
 
 - Vite 5
 - `@vitejs/plugin-react`
-- npm scripts for dev/build/preview
+- npm + Node.js
 
 ### PDF Processing
 
-- `pdfjs-dist` with dynamic worker import
+- `pdfjs-dist` (legacy build with worker)
 
-### Styling and UI Assets
+### UI & Assets
 
-- Custom CSS (`index.css`)
+- Custom CSS (single stylesheet)
 - Google Fonts (`Inter`)
 - Phosphor Icons (CDN)
 
@@ -129,44 +126,50 @@ Implemented scope in current codebase:
 ## 6. Folder Structure Explanation
 
 ```text
-frontend/
-|-- app.jsx                    # Main app state, route control, auth, upload orchestration
-|-- index.html                 # App shell (header, controls, mount point)
-|-- index.css                  # Global styles and component-specific styles
-|-- package.json               # Dependencies and scripts
-|-- package-lock.json          # Locked dependency graph
-|-- vite.config.js             # Vite + React plugin config
-|-- README.md                  # Frontend documentation
+AI-study-buddy-main/
+|-- app.jsx                    # Main app entry: routes, auth state, upload flow, theme logic
+|-- index.html                 # HTML shell, header/nav placeholders, script mount point
+|-- index.css                  # Global design system + all component styles
+|-- package.json               # Scripts and dependencies
+|-- package-lock.json          # Locked dependency tree
+|-- vite.config.js             # Vite configuration with React plugin
+|-- README.md                  # Project documentation
 |
 |-- views/
-|   |-- home.jsx               # Upload view
-|   |-- dashboard.jsx          # Action cards for summary/quiz/chat
-|   |-- summary.jsx            # Summary presentation view
-|   |-- quiz.jsx               # Quiz generation and scoring UI
-|   |-- chat.jsx               # PDF-grounded chat interface
-|   |-- login.jsx              # Login form view
-|   |-- signup.jsx             # Signup form view
+|   |-- home.jsx               # Upload page with drag/drop + file picker
+|   |-- dashboard.jsx          # Central action cards (Summary, Quiz, Chat)
+|   |-- summary.jsx            # Renders summary from uploaded document object
+|   |-- quiz.jsx               # Quiz generation UI, scoring, navigation
+|   |-- chat.jsx               # Q&A interface with PDF-grounded responses
+|   |-- login.jsx              # Login form UI
+|   |-- signup.jsx             # Signup form UI
 |
 |-- utils/
-|   |-- pdfSummary.js          # PDF extraction and summary helpers
+|   |-- pdfSummary.js          # PDF text extraction + local summary utilities
 |
-|-- dist/                      # Production build output generated by Vite
-|-- node_modules/              # Installed packages
+|-- dist/                      # Production build output (generated by Vite)
+|   |-- index.html
+|   |-- assets/
+|       |-- index-*.js
+|       |-- index-*.css
+|       |-- pdf*.js / pdf.worker*.js / .mjs
+|
+|-- node_modules/              # Installed dependencies (generated)
 ```
 
 ---
 
 ## 7. How It Works (High-Level)
 
-1. Browser loads `index.html` and mounts React app from `app.jsx`.
-2. Custom `window.navigate` updates hash + history state.
-3. User logs in/signs up (local UI state only).
+1. App bootstraps in `index.html` and mounts React from `app.jsx`.
+2. A custom route helper (`window.navigate`) switches views using URL hash/history state.
+3. User logs in/signs up (client state toggles authenticated session).
 4. User uploads a PDF in Home view.
-5. `extractTextFromPdf` reads pages and extracts text.
-6. `generateSummaryFromText` prepares summary fields.
-7. Uploaded document is stored in state and reused by Summary/Quiz/Chat views.
-8. Quiz and chat derive outputs from local heuristics over extracted text.
-9. Theme state is saved and restored through `localStorage`.
+5. `extractTextFromPdf` reads each page and combines text content.
+6. `generateSummaryFromText` creates overview, concepts, and breakdown.
+7. Uploaded doc object is stored in app state and used by Summary, Quiz, and Chat views.
+8. Quiz and chat generate outputs from extracted text using in-app heuristics.
+9. Theme preference is persisted in `localStorage` and reloaded on startup.
 
 ---
 
@@ -177,7 +180,7 @@ frontend/
 - Node.js 18+ recommended
 - npm
 
-### Install
+### Installation
 
 ```bash
 npm install
@@ -189,7 +192,7 @@ npm install
 npm run dev
 ```
 
-### Build for Production
+### Production Build
 
 ```bash
 npm run build
@@ -205,72 +208,72 @@ npm run preview
 
 ## 9. Usage Instructions
 
-1. Start the app with `npm run dev`.
-2. Open the Vite URL shown in terminal (typically `http://localhost:5173`).
-3. Sign up or log in from the landing route.
-4. Upload a text-based PDF file from Home.
-5. Use Dashboard to open:
+1. Run `npm run dev`.
+2. Open the local Vite URL shown in terminal (commonly `http://localhost:5173`).
+3. Login or sign up in the UI.
+4. Upload a text-based PDF from the Home page.
+5. Go to Dashboard and choose:
    - Explain Notes
    - Generate Quiz
    - Ask Questions
-6. Toggle Hinglish mode inside Chat if needed.
-7. Use top-right theme toggle for light/dark mode.
+6. Toggle theme (moon/sun icon) as needed.
+7. Use Logout in header to clear current in-memory session.
 
 ---
 
 ## 10. Screenshots
 
-No screenshots are currently committed in this folder.
+Screenshots are not included in the repository at the moment.
 
-Recommended placeholders:
+Placeholders:
 
-- `docs/screenshots/frontend-login.png`
-- `docs/screenshots/frontend-upload.png`
-- `docs/screenshots/frontend-dashboard.png`
-- `docs/screenshots/frontend-summary.png`
-- `docs/screenshots/frontend-quiz.png`
-- `docs/screenshots/frontend-chat.png`
+- `docs/screenshots/login.png` - Login screen
+- `docs/screenshots/upload.png` - PDF upload screen
+- `docs/screenshots/dashboard.png` - Dashboard action cards
+- `docs/screenshots/summary.png` - Summary view
+- `docs/screenshots/quiz.png` - Quiz view
+- `docs/screenshots/chat.png` - Chat view
 
 ---
 
-## 11. Known Issues / Limitations (Observed)
+## 11. Known Issues / Limitations (Observed in Code)
 
-- No real backend integration for auth or persistence.
-- Auth flow is UI-state based (not secure, not persistent across refresh).
-- Summary/quiz/chat logic is heuristic and local, not LLM-service backed.
-- Scanned/image-only PDFs can produce poor extraction results.
-- Header navigation is manipulated via `innerHTML` from React effects.
-- No automated tests configured in frontend folder.
+- No backend or database; all state is runtime/in-memory.
+- Authentication is UI-based only (no secure auth, no persistent user accounts).
+- Chat, summary, and quiz are heuristic algorithms, not external AI model calls.
+- Extracted text quality depends on PDF content; scanned/image-only PDFs may fail.
+- Header nav is injected via `innerHTML` in app state effects (works, but not ideal React pattern).
+- Some generated/legacy references in previous docs (for example `app.js`) do not match current code (`app.jsx`).
 
 ---
 
 ## 12. Future Scope (Post-Phase 1)
 
-- Integrate backend APIs for authentication and session persistence.
-- Persist uploaded documents, summaries, and quiz sessions.
-- Upgrade local heuristics to model-backed generation pipelines.
-- Add OCR support path for scanned PDFs.
-- Add unit and integration tests.
-- Improve accessibility and keyboard navigation coverage.
+Clearly separated from current implementation:
+
+- Backend integration for real authentication and persistence.
+- User accounts, document storage, and session history.
+- LLM-backed summarization, quiz generation, and chat.
+- OCR pipeline for scanned PDFs.
+- Test suite (unit/integration/e2e) and CI checks.
 
 ---
 
 ## 13. Contributors
 
-Contributor metadata is not declared in `package.json` in this folder.
+Contributor metadata is not explicitly defined in `package.json` or repository manifests in this folder.
 
-Suggested format:
+If you want, add a section like:
 
-- Name - Frontend engineering
-- Name - UX/UI implementation
+- Name - Role
+- Name - Role
 
 ---
 
-## NPM Scripts
+## Scripts Reference
 
-- `npm run dev`
-  - Starts Vite development server.
-- `npm run build`
-  - Builds production assets in `dist/`.
-- `npm run preview`
-  - Serves production build locally.
+From current `package.json`:
+
+- `npm run dev` - start Vite dev server
+- `npm run build` - create production bundle in `dist/`
+- `npm run preview` - preview production build locally
