@@ -22,6 +22,18 @@ export function DashboardView() {
           <h2>Ask Questions</h2>
           <p>Chat with AI to clarify any complex concepts.</p>
         </div>
+
+        <div className="glass-card action-card" onClick={() => window.navigate('reexplain')}>
+          <i className="ph-fill ph-brain"></i>
+          <h2>Re-Explain Concept</h2>
+          <p>Get a concept explained tailored specifically to any cognitive level.</p>
+        </div>
+
+        <div className="glass-card action-card" onClick={() => window.navigate('socratic')}>
+          <i className="ph-fill ph-sword"></i>
+          <h2>Socratic Opponent</h2>
+          <p>Defend your logic against a rigorous AI debater.</p>
+        </div>
       </div>
     </div>
   );

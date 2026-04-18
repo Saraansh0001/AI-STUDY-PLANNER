@@ -8,9 +8,11 @@ import { SummaryView } from './views/summary.jsx';
 import { QuizView } from './views/quiz.jsx';
 import { LoginView } from './views/login.jsx';
 import { SignupView } from './views/signup.jsx';
+import { ReExplainView } from './views/reexplain.jsx';
+import { SocraticView } from './views/socratic.jsx';
 import { extractTextFromPdf, generateSummaryFromText } from './utils/pdfSummary.js';
 
-const VALID_ROUTES = ['home', 'dashboard', 'chat', 'summary', 'quiz', 'signup', 'login'];
+const VALID_ROUTES = ['home', 'dashboard', 'chat', 'summary', 'quiz', 'reexplain', 'socratic', 'signup', 'login'];
 
 const getRouteFromUrl = () => {
   const hashRoute = window.location.hash.replace('#', '');
@@ -172,6 +174,8 @@ function App() {
       case 'chat': return <ChatView uploadedDoc={uploadedDoc} />;
       case 'summary': return <SummaryView uploadedDoc={uploadedDoc} />;
       case 'quiz': return <QuizView uploadedDoc={uploadedDoc} />;
+      case 'reexplain': return <ReExplainView />;
+      case 'socratic': return <SocraticView />;
       case 'signup': return <SignupView onSignup={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToLogin={() => window.navigate('login')} />;
       case 'login': return <LoginView onLogin={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToSignup={() => window.navigate('signup')} />;
       default: return <LoginView onLogin={(e) => { e.preventDefault(); setIsAuthenticated(true); window.navigate('home'); }} onNavigateToSignup={() => window.navigate('signup')} />;
